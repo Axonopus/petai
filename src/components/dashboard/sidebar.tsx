@@ -95,6 +95,11 @@ export default function DashboardSidebar() {
           icon: <Settings className="h-5 w-5" />,
           href: "/dashboard/settings",
         },
+        {
+          name: "Subscription",
+          icon: <CreditCard className="h-5 w-5" />,
+          href: "/dashboard/settings/subscription",
+        },
       );
     } else if (userRole === "staff") {
       baseItems.push(
