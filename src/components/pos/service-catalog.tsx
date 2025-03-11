@@ -161,10 +161,10 @@ export default function ServiceCatalog({ onAddToCart }: ServiceCatalogProps) {
   });
 
   // Get unique categories
-  const categories = [
-    "all",
-    ...new Set(services.map((service) => service.category)),
-  ];
+  const uniqueCategories = Array.from(
+    new Set(services.map((service) => service.category)),
+  );
+  const categories = ["all", ...uniqueCategories];
 
   return (
     <div className="space-y-4">

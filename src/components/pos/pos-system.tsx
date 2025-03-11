@@ -34,14 +34,26 @@ export default function POSSystem() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cashRegisterOpen, setCashRegisterOpen] = useState(false);
+  interface Transaction {
+    id: string;
+    items: any[];
+    customer: any;
+    subtotal: number;
+    tax: number;
+    total: number;
+    paymentMethod: string;
+    timestamp: Date;
+    amount: number;
+  }
+
   const [cashRegisterData, setCashRegisterData] = useState({
     isOpen: false,
     openingBalance: 0,
     currentBalance: 0,
-    transactions: [],
+    transactions: [] as Transaction[],
     cashier: "John Doe",
-    openTime: null,
-    closeTime: null,
+    openTime: null as Date | null,
+    closeTime: null as Date | null,
   });
 
   // Sound effects

@@ -173,10 +173,10 @@ export default function ProductCatalog({ onAddToCart }: ProductCatalogProps) {
   });
 
   // Get unique categories
-  const categories = [
-    "all",
-    ...new Set(products.map((product) => product.category)),
-  ];
+  const uniqueCategories = Array.from(
+    new Set(products.map((product) => product.category)),
+  );
+  const categories = ["all", ...uniqueCategories];
 
   return (
     <div className="space-y-4">

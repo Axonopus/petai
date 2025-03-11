@@ -391,18 +391,16 @@ function calculateTotalHours(schedule: Schedule): number {
 
 // Calculate total hours from timesheet
 function calculateTimesheetTotal(records: ClockRecord[]): number {
-  return records
-    .reduce((total, record) => {
-      return total + parseFloat(record.totalHours);
-    }, 0)
-    .toFixed(2);
+  const total = records.reduce((total, record) => {
+    return total + parseFloat(record.totalHours);
+  }, 0);
+  return parseFloat(total.toFixed(2));
 }
 
 // Calculate total overtime from timesheet
 function calculateOvertimeTotal(records: ClockRecord[]): number {
-  return records
-    .reduce((total, record) => {
-      return total + parseFloat(record.overtime);
-    }, 0)
-    .toFixed(2);
+  const total = records.reduce((total, record) => {
+    return total + parseFloat(record.overtime);
+  }, 0);
+  return parseFloat(total.toFixed(2));
 }
