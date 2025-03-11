@@ -23,7 +23,7 @@ export default function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [userRole, setUserRole] = useState("owner"); // Default to owner, can be dynamically set
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 0,
@@ -38,10 +38,18 @@ export default function DashboardSidebar() {
       }
     };
 
+    const handleToggleSidebar = () => {
+      setSidebarOpen((prev) => !prev);
+    };
+
     window.addEventListener("resize", handleResize);
+    document.addEventListener("toggle-sidebar", handleToggleSidebar);
     handleResize(); // Initial check
 
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("toggle-sidebar", handleToggleSidebar);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -57,25 +65,25 @@ export default function DashboardSidebar() {
         icon: <BarChart3 className="h-5 w-5" />,
         href: "/dashboard",
       },
-      {
-        name: "Appointments",
-        icon: <Calendar className="h-5 w-5" />,
-        href: "/dashboard/appointments",
-      },
     ];
 
     // Add role-specific items
     if (userRole === "owner" || userRole === "admin") {
       baseItems.push(
         {
+          name: "CRM & Loyalty",
+          icon: <Dog className="h-5 w-5" />,
+          href: "/dashboard/crm",
+        },
+        {
+          name: "Point of Sale",
+          icon: <CreditCard className="h-5 w-5" />,
+          href: "/dashboard/pos",
+        },
+        {
           name: "Staff",
           icon: <Users className="h-5 w-5" />,
           href: "/dashboard/staff",
-        },
-        {
-          name: "Clients",
-          icon: <Dog className="h-5 w-5" />,
-          href: "/dashboard/clients",
         },
         {
           name: "Payments",
@@ -89,11 +97,18 @@ export default function DashboardSidebar() {
         },
       );
     } else if (userRole === "staff") {
-      baseItems.push({
-        name: "Clients",
-        icon: <Dog className="h-5 w-5" />,
-        href: "/dashboard/clients",
-      });
+      baseItems.push(
+        {
+          name: "CRM & Loyalty",
+          icon: <Dog className="h-5 w-5" />,
+          href: "/dashboard/crm",
+        },
+        {
+          name: "Point of Sale",
+          icon: <CreditCard className="h-5 w-5" />,
+          href: "/dashboard/pos",
+        },
+      );
     }
 
     return baseItems;
@@ -118,10 +133,10 @@ export default function DashboardSidebar() {
 
       {/* Mobile sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-lg transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out md:hidden`}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-white shadow-lg transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} transition-transform duration-300 ease-in-out md:hidden mobile-sidebar`}
         style={{ width: "250px" }}
       >
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="mobile-sidebar-header">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-[#FC8D68] rounded-lg flex items-center justify-center mr-2">
               <span className="text-white font-bold text-xl">G</span>
@@ -136,7 +151,7 @@ export default function DashboardSidebar() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="mobile-sidebar-content">
           <nav className="space-y-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -159,7 +174,7 @@ export default function DashboardSidebar() {
           </nav>
         </div>
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="mobile-sidebar-footer">
           <button
             onClick={handleSignOut}
             className="flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 transition-colors duration-200"
@@ -235,24 +250,17 @@ export default function DashboardSidebar() {
       {/* Mobile top bar */}
       <div className="sticky top-0 z-20 md:hidden bg-white flex items-center justify-between border-b border-gray-200 px-4 py-2">
         <div className="flex items-center">
-          <button
-            type="button"
-            className="p-2 rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#FC8D68]"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="flex items-center ml-3">
-            <div className="w-8 h-8 bg-[#FC8D68] rounded-lg flex items-center justify-center mr-2">
-              <span className="text-white font-bold text-sm">G</span>
-            </div>
-            <span className="text-lg font-bold">GoPet AI</span>
+          <div className="w-8 h-8 bg-[#FC8D68] rounded-lg flex items-center justify-center mr-2">
+            <span className="text-white font-bold text-sm">G</span>
           </div>
+          <span className="text-lg font-bold">GoPet AI</span>
         </div>
       </div>
 
       {/* Content padding for desktop */}
-      <div className={`hidden md:block md:pl-${collapsed ? "16" : "64"}`}></div>
+      <div
+        className={`hidden md:block ${collapsed ? "sidebar-collapsed" : "sidebar-expanded"} dashboard-content`}
+      ></div>
     </>
   );
 }

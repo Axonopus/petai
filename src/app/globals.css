@@ -67,3 +67,51 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom styles for sidebar layout */
+@media (min-width: 768px) {
+  .dashboard-content {
+    padding-left: 4rem;
+  }
+
+  .sidebar-collapsed .dashboard-content {
+    padding-left: 4rem;
+  }
+
+  .sidebar-expanded .dashboard-content {
+    padding-left: 16rem;
+  }
+}
+
+/* Mobile sidebar styles */
+.mobile-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mobile-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+.mobile-sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Hide .py-2 on mobile */
+@media (max-width: 767px) {
+  .py-2 {
+    display: none;
+  }
+}
