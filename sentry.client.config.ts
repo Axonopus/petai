@@ -12,8 +12,7 @@ Sentry.init({
     Sentry.replayIntegration(),
   ],
   
-  // Enable automatic instrumentation of errors and transactions
-  enableTracing: true,
+  // Configure session tracking
   autoSessionTracking: false,
   sessionTrackingIntervalMillis: 30000,
 
