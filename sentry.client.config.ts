@@ -3,14 +3,13 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
-import { BrowserTracing } from "@sentry/browser";
 
 Sentry.init({
   dsn: "https://fd62d21c26ec23cd8eb2f674e2e2a807@o4508960654884864.ingest.de.sentry.io/4508960660783184",
 
   // Add optional integrations for additional features
   integrations: [
-    new BrowserTracing(),
+    new Sentry.BrowserTracing(),
     Sentry.replayIntegration(),
   ],
   
