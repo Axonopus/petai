@@ -12,10 +12,6 @@ Sentry.init({
     Sentry.replayIntegration(),
   ],
   
-  // Configure session tracking
-  autoSessionTracking: false,
-  sessionTrackingIntervalMillis: 30000,
-
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 1,
 
