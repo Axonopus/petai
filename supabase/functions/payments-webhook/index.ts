@@ -15,7 +15,6 @@ export const corsResponse = (status: number, body: any) => {
 };
 
 export default async function handler(req: Request) {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -33,11 +32,9 @@ export default async function handler(req: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get the request body
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
 
-    // Verify the webhook signature
     const stripe = new StripeClient(process.env.STRIPE_SECRET_KEY || "", {
       apiVersion: "2023-10-16" as any,
       httpClient: StripeClient.createFetchHttpClient(),
@@ -62,7 +59,6 @@ export default async function handler(req: Request) {
       });
     }
 
-    // Store the event in the database
     const { data: webhookEvent, error: webhookError } = await supabase
       .from("webhook_events")
       .insert({
@@ -76,7 +72,6 @@ export default async function handler(req: Request) {
       console.error("Error storing webhook event:", webhookError);
     }
 
-    // Handle specific event types
     switch (event.type) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
@@ -101,28 +96,7 @@ export default async function handler(req: Request) {
   }
 }
 
-interface DatabaseResponse<T = any> {
-  data: T | null;
-  error: any;
-}
-
-interface SupabaseTable {
-  select: (columns: string) => {
-    eq: (column: string, value: string) => Promise<DatabaseResponse>;
-    single: () => Promise<DatabaseResponse>;
-  };
-  insert: (data: any) => Promise<DatabaseResponse>;
-  update: (data: any) => {
-    eq: (column: string, value: string) => Promise<DatabaseResponse>;
-  };
-  delete: () => {
-    eq: (column: string, value: string) => Promise<DatabaseResponse>;
-  };
-}
-
-interface SupabaseClient {
-  from: (table: string) => SupabaseTable;
-}
+type SupabaseClient = ReturnType<typeof createClient>;
 
 type StripePrice = {
   id: string;
@@ -163,24 +137,20 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
     return;
   }
 
-  // Determine the subscription status
   const status: SubscriptionStatus = subscription.status === "trialing" ? "trialing"
     : subscription.status === "past_due" ? "past_due"
     : subscription.status === "canceled" || subscription.status === "unpaid" ? "canceled"
     : "active";
 
-  // Determine the plan type from the subscription items
   const planType: PlanType = subscription.items.data[0]?.price.id.includes("petshop_pos") ? "petshop_pos"
     : subscription.items.data[0]?.price.id.includes("boarding") ? "boarding"
     : subscription.items.data[0]?.price.id.includes("daycare") ? "daycare"
     : subscription.items.data[0]?.price.id.includes("grooming") ? "grooming"
     : "free";
 
-  // Determine the billing cycle
   const billingCycle: BillingCycle = subscription.metadata?.billing_cycle as BillingCycle || 
     (subscription.items.data[0]?.price.recurring.interval === "year" ? "annual" : "monthly");
 
-  // Calculate next billing date and trial end date
   const nextBillingDate = new Date(
     subscription.current_period_end * 1000,
   ).toISOString();
@@ -188,7 +158,6 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
     ? new Date(subscription.trial_end * 1000).toISOString()
     : null;
 
-  // Check if a subscription record already exists for this user
   const { data: existingSubscription } = await supabase
     .from("subscriptions")
     .select("id")
@@ -196,7 +165,6 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
     .single();
 
   if (existingSubscription) {
-    // Update the existing subscription
     const { error } = await supabase
       .from("subscriptions")
       .update({
@@ -217,7 +185,6 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
       console.error("Error updating subscription:", error);
     }
   } else {
-    // Create a new subscription record
     const { error } = await supabase.from("subscriptions").insert({
       user_id: userId,
       stripe_customer_id: subscription.customer,
@@ -239,14 +206,12 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
 }
 
 async function handleSubscriptionCanceled(supabase: SupabaseClient, subscription: StripeSubscription) {
-  // Get the user ID from the subscription metadata
   const userId = subscription.metadata?.user_id;
   if (!userId) {
     console.error("No user ID found in subscription metadata");
     return;
   }
 
-  // Update the subscription status to canceled
   const { error } = await supabase
     .from("subscriptions")
     .update({
@@ -261,15 +226,12 @@ async function handleSubscriptionCanceled(supabase: SupabaseClient, subscription
 }
 
 async function handleInvoicePaymentSucceeded(supabase: SupabaseClient, invoice: any) {
-  // This is where you would send a payment confirmation email
   console.log("Invoice payment succeeded:", invoice.id);
 }
 
 async function handleInvoicePaymentFailed(supabase: SupabaseClient, invoice: any) {
-  // This is where you would send a payment failure email
   console.log("Invoice payment failed:", invoice.id);
 
-  // Update the subscription status to past_due
   if (invoice.subscription) {
     const { data: subscription } = await supabase
       .from("subscriptions")
@@ -292,19 +254,3 @@ async function handleInvoicePaymentFailed(supabase: SupabaseClient, invoice: any
     }
   }
 }
-
-// Minimal Stripe types for TypeScript
-interface Stripe {
-  webhooks: {
-    constructEvent: (body: string, signature: string, secret: string) => any;
-  };
-  createFetchHttpClient: () => any;
-}
-
-declare const Stripe: {
-  new (
-    secretKey: string,
-    options: { apiVersion: string; httpClient: any },
-  ): Stripe;
-  createFetchHttpClient: () => any;
-};
