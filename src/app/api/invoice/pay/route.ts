@@ -33,6 +33,13 @@ export async function POST(req: NextRequest) {
       .eq("owner_id", user.id)
       .single();
 
+    if (!profile) {
+      return NextResponse.json(
+        { error: "Business profile not found" },
+        { status: 404 }
+      );
+    }
+
     const { data: paymentSettings } = await supabase
       .from("business_payments")
       .select("stripe_account_id")
