@@ -106,20 +106,22 @@ interface DatabaseResponse<T = any> {
   error: any;
 }
 
-interface SupabaseClient {
-  from: (table: string) => {
-    select: (columns: string) => {
-      eq: (column: string, value: string) => Promise<DatabaseResponse>;
-      single: () => Promise<DatabaseResponse>;
-    };
-    insert: (data: any) => Promise<DatabaseResponse>;
-    update: (data: any) => {
-      eq: (column: string, value: string) => Promise<DatabaseResponse>;
-    };
-    delete: () => {
-      eq: (column: string, value: string) => Promise<DatabaseResponse>;
-    };
+interface SupabaseTable {
+  select: (columns: string) => {
+    eq: (column: string, value: string) => Promise<DatabaseResponse>;
+    single: () => Promise<DatabaseResponse>;
   };
+  insert: (data: any) => Promise<DatabaseResponse>;
+  update: (data: any) => {
+    eq: (column: string, value: string) => Promise<DatabaseResponse>;
+  };
+  delete: () => {
+    eq: (column: string, value: string) => Promise<DatabaseResponse>;
+  };
+}
+
+interface SupabaseClient {
+  from: (table: string) => SupabaseTable;
 }
 
 type StripePrice = {
