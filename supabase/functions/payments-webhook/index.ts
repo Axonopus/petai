@@ -53,8 +53,9 @@ export default async function handler(req: Request) {
         signature,
         stripeWebhookSecret,
       );
-    } catch (err) {
-      console.error(`Webhook signature verification failed: ${err.message}`);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      console.error(`Webhook signature verification failed: ${errorMessage}`);
       return new Response(JSON.stringify({ error: "Invalid signature" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
