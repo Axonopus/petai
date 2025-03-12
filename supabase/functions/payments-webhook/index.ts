@@ -24,9 +24,9 @@ export default async function handler(
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-    const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || "";
+    const supabaseUrl = process.env.SUPABASE_URL || "";
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+    const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -35,7 +35,7 @@ export default async function handler(
     const signature = req.headers.get("stripe-signature");
 
     // Verify the webhook signature
-    const stripe = new StripeClient(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new StripeClient(process.env.STRIPE_SECRET_KEY || "", {
       apiVersion: "2023-10-16" as any,
       httpClient: StripeClient.createFetchHttpClient(),
     });
