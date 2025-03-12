@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
 // Helper function to get plan details based on plan ID
 async function getPlanDetails(planId: string) {
   // This would normally fetch from a database, but for demo purposes we'll hardcode
-  const plans = {
+  const plans: { [key: string]: { id: string; name: string; description: string; amount: number } } = {
     petshop_pos: {
       id: "petshop_pos",
       name: "Pet Shop with POS",
