@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextApiRequest, NextApiResponse } from "next";
-import Stripe from "stripe";
+import StripeClient from "stripe";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,9 +35,9 @@ export default async function handler(
     const signature = req.headers.get("stripe-signature");
 
     // Verify the webhook signature
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+    const stripe = new StripeClient(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16" as any,
-      httpClient: Stripe.createFetchHttpClient(),
+      httpClient: StripeClient.createFetchHttpClient(),
     });
 
     let event;
