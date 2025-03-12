@@ -1,6 +1,6 @@
-// Follow Deno Deploy requirements for Supabase Edge Functions
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "@supabase/supabase-js";
+import { NextApiRequest, NextApiResponse } from "next";
+import Stripe from "stripe";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,10 +8,19 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-serve(async (req) => {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, Stripe-Signature"
+    );
+    res.status(204).end();
+    return;
   }
 
   try {
@@ -77,15 +86,10 @@ serve(async (req) => {
         break;
     }
 
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    res.status(200).json({ received: true });
   } catch (error) {
     console.error("Webhook error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    res.status(500).json({ error: error.message });
   }
 });
 
