@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -21,8 +22,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+import { createClient } from "@/supabase/client";
+import { useEffect } from "react";
+import { toast } from "sonner";
+
 export default function BusinessProfileSettings() {
+  const supabase = createClient();
+  const [loading, setLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [profile, setProfile] = useState({
+    business_name: "",
+    business_description: "",
+    email: "",
+    phone_number: "",
+    website: "",
+    business_logo: null as string | null
+  });
+  
   const [locations, setLocations] = useState([
     {
       id: 1,
@@ -31,16 +47,86 @@ export default function BusinessProfileSettings() {
       phone: "(555) 123-4567",
     },
   ]);
+  
+  const [businessHours, setBusinessHours] = useState([
+    { day: "Monday", open_time: "09:00", close_time: "17:00", rest_start: null, rest_end: null, closed: false },
+    { day: "Tuesday", open_time: "09:00", close_time: "17:00", rest_start: null, rest_end: null, closed: false },
+    { day: "Wednesday", open_time: "09:00", close_time: "17:00", rest_start: null, rest_end: null, closed: false },
+    { day: "Thursday", open_time: "09:00", close_time: "17:00", rest_start: null, rest_end: null, closed: false },
+    { day: "Friday", open_time: "09:00", close_time: "17:00", rest_start: null, rest_end: null, closed: false },
+    { day: "Saturday", open_time: "10:00", close_time: "16:00", rest_start: null, rest_end: null, closed: false },
+    { day: "Sunday", open_time: "10:00", close_time: "16:00", rest_start: null, rest_end: null, closed: true }
+  ]);
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    fetchBusinessProfile();
+  }, []);
+
+  const fetchBusinessProfile = async () => {
+    try {
+      const response = await fetch("/api/business-profile");
+      const data = await response.json();
+      
+      if (data.profile) {
+        setProfile(data.profile);
+        if (data.profile.business_logo) {
+          setLogoPreview(data.profile.business_logo);
+        }
+      }
+      
+      if (data.hours && data.hours.length > 0) {
+        setBusinessHours(data.hours);
+      }
+    } catch (error) {
+      console.error("Error fetching business profile:", error);
+      toast.error("Failed to load business profile");
+    }
+  };
+
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setLogoPreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+
+        // Upload to Supabase Storage
+        const fileExt = file.name.split(".").pop();
+        const filePath = `business-logos/${Date.now()}.${fileExt}`;
+
+        const { data, error } = await supabase.storage
+          .from("public")
+          .upload(filePath, file);
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from("public")
+          .getPublicUrl(filePath);
+
+        setProfile({ ...profile, business_logo: publicUrl });
+      } catch (error) {
+        console.error("Error uploading logo:", error);
+        toast.error("Failed to upload logo");
+      }
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setProfile({ ...profile, [name]: value });
+  };
+
+  const handleHoursChange = (day: string, field: string, value: string | boolean) => {
+    setBusinessHours(hours =>
+      hours.map(hour =>
+        hour.day === day ? { ...hour, [field]: value } : hour
+      )
+    );
   };
 
   const addLocation = () => {
@@ -57,6 +143,29 @@ export default function BusinessProfileSettings() {
 
   const removeLocation = (id: number) => {
     setLocations(locations.filter((location) => location.id !== id));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/business-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile,
+          hours: businessHours
+        })
+      });
+
+      if (!response.ok) throw new Error("Failed to save changes");
+      
+      toast.success("Changes saved successfully");
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      toast.error("Failed to save changes");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -167,84 +276,145 @@ export default function BusinessProfileSettings() {
             <Label className="text-base font-medium mb-4 block">
               Business Hours
             </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label className="text-sm">Weekdays (Monday - Friday)</Label>
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <div className="grid grid-cols-2 gap-2 flex-1">
-                    <Select defaultValue="8:00">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Opening time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 13 }, (_, i) => i + 6).map(
-                          (hour) => (
-                            <SelectItem
-                              key={hour}
-                              value={`${hour}:00`}
-                            >{`${hour}:00 ${hour < 12 ? "AM" : "PM"}`}</SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <Select defaultValue="18:00">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Closing time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 13 }, (_, i) => i + 10).map(
-                          (hour) => (
-                            <SelectItem
-                              key={hour}
-                              value={`${hour}:00`}
-                            >{`${hour > 12 ? hour - 12 : hour}:00 ${hour < 12 ? "AM" : "PM"}`}</SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
+            <div className="space-y-4">
+              {businessHours.map((hours, index) => (
+                <div key={hours.day} className="p-4 border rounded-lg bg-gray-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="font-medium">{hours.day}</div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`closed-${hours.day}`} className="text-sm text-gray-600">
+                        Closed
+                      </Label>
+                      <Switch
+                        id={`closed-${hours.day}`}
+                        checked={hours.closed}
+                        onCheckedChange={(checked) => handleHoursChange(hours.day, 'closed', checked)}
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="space-y-3">
-                <Label className="text-sm">Weekends (Saturday - Sunday)</Label>
-                <div className="flex items-center gap-3">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <div className="grid grid-cols-2 gap-2 flex-1">
-                    <Select defaultValue="9:00">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Opening time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 13 }, (_, i) => i + 6).map(
-                          (hour) => (
-                            <SelectItem
-                              key={hour}
-                              value={`${hour}:00`}
-                            >{`${hour}:00 ${hour < 12 ? "AM" : "PM"}`}</SelectItem>
-                          ),
+                  {!hours.closed && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-4 w-4 text-gray-500" />
+                        <div className="grid grid-cols-2 gap-4 flex-1">
+                          <div>
+                            <Label className="text-sm mb-1.5 block">Opening Time</Label>
+                            <Select
+                              value={hours.open_time}
+                              onValueChange={(value) => handleHoursChange(hours.day, 'open_time', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select time" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => {
+                                  const hour = i.toString().padStart(2, '0');
+                                  return (
+                                    <SelectItem key={`${hour}:00`} value={`${hour}:00`}>
+                                      {`${hour}:00`}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-sm mb-1.5 block">Closing Time</Label>
+                            <Select
+                              value={hours.close_time}
+                              onValueChange={(value) => handleHoursChange(hours.day, 'close_time', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select time" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => {
+                                  const hour = i.toString().padStart(2, '0');
+                                  return (
+                                    <SelectItem key={`${hour}:00`} value={`${hour}:00`}>
+                                      {`${hour}:00`}
+                                    </SelectItem>
+                                  );
+                                })}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-sm">Rest Hours</Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => {
+                              if (hours.rest_start === null) {
+                                handleHoursChange(hours.day, 'rest_start', '12:00');
+                                handleHoursChange(hours.day, 'rest_end', '13:00');
+                              } else {
+                                handleHoursChange(hours.day, 'rest_start', null);
+                                handleHoursChange(hours.day, 'rest_end', null);
+                              }
+                            }}
+                          >
+                            {hours.rest_start === null ? 'Add Rest Hours' : 'Remove Rest Hours'}
+                          </Button>
+                        </div>
+
+                        {hours.rest_start !== null && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm mb-1.5 block">Start Break</Label>
+                              <Select
+                                value={hours.rest_start || ''}
+                                onValueChange={(value) => handleHoursChange(hours.day, 'rest_start', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select time" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }, (_, i) => {
+                                    const hour = i.toString().padStart(2, '0');
+                                    return (
+                                      <SelectItem key={`${hour}:00`} value={`${hour}:00`}>
+                                        {`${hour}:00`}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-sm mb-1.5 block">End Break</Label>
+                              <Select
+                                value={hours.rest_end || ''}
+                                onValueChange={(value) => handleHoursChange(hours.day, 'rest_end', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select time" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Array.from({ length: 24 }, (_, i) => {
+                                    const hour = i.toString().padStart(2, '0');
+                                    return (
+                                      <SelectItem key={`${hour}:00`} value={`${hour}:00`}>
+                                        {`${hour}:00`}
+                                      </SelectItem>
+                                    );
+                                  })}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
                         )}
-                      </SelectContent>
-                    </Select>
-                    <Select defaultValue="17:00">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Closing time" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 13 }, (_, i) => i + 10).map(
-                          (hour) => (
-                            <SelectItem
-                              key={hour}
-                              value={`${hour}:00`}
-                            >{`${hour > 12 ? hour - 12 : hour}:00 ${hour < 12 ? "AM" : "PM"}`}</SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 

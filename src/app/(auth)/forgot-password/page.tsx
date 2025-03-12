@@ -32,7 +32,7 @@ export default async function ForgotPassword(props: {
                 Already have an account?{" "}
                 <Link
                   className="text-primary font-medium hover:underline transition-all"
-                  href="/sign-in"
+                  href="/login"
                 >
                   Sign in
                 </Link>

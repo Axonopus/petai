@@ -19,7 +19,7 @@ export default async function Dashboard() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/sign-in");
+    return redirect("/login");
   }
 
   // Mock data for the dashboard

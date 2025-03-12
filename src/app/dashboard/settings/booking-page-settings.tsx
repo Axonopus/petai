@@ -13,17 +13,29 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Globe, Upload, ExternalLink, Copy, Check } from "lucide-react";
+import { Globe, Upload, ExternalLink, Copy, Check, Facebook, Twitter, Instagram, Phone } from "lucide-react";
+import { createClient } from "@/supabase/client";
+import { toast } from "sonner";
 
 export default function BookingPageSettings() {
+  const supabase = createClient();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [customDomain, setCustomDomain] = useState(false);
   const [bookingUrl, setBookingUrl] = useState("happypaws");
-  const [fullBookingUrl, setFullBookingUrl] = useState(
-    "https://gopet.ai/happypaws",
-  );
+  const [fullBookingUrl, setFullBookingUrl] = useState("https://gopet.ai/happypaws");
+  const [themeColor, setThemeColor] = useState("#FC8D68");
+  const [pageTitle, setPageTitle] = useState("Book an Appointment - Happy Paws Pet Care");
+  const [pageDescription, setPageDescription] = useState("");
+  const [showTestimonials, setShowTestimonials] = useState(true);
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: "",
+    twitter: "",
+    instagram: "",
+    whatsapp: ""
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -300,6 +312,114 @@ export default function BookingPageSettings() {
                 <Switch id="show-services" defaultChecked />
               </div>
             </div>
+          </div>
+
+          {/* Social Media & Contact Links */}
+          <div className="pt-4 border-t border-gray-200">
+            <Label className="text-base font-medium mb-4 block">
+              Social Media & Contact Links
+            </Label>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="facebook">Facebook Page URL</Label>
+                <div className="flex mt-1">
+                  <div className="bg-gray-100 border border-r-0 rounded-l-md px-3 flex items-center">
+                    <Facebook className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <Input
+                    id="facebook"
+                    value={socialLinks.facebook}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+                    className="rounded-l-none"
+                    placeholder="https://facebook.com/your-page"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="twitter">X (Twitter) Profile URL</Label>
+                <div className="flex mt-1">
+                  <div className="bg-gray-100 border border-r-0 rounded-l-md px-3 flex items-center">
+                    <Twitter className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <Input
+                    id="twitter"
+                    value={socialLinks.twitter}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })}
+                    className="rounded-l-none"
+                    placeholder="https://twitter.com/your-handle"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="instagram">Instagram Profile URL</Label>
+                <div className="flex mt-1">
+                  <div className="bg-gray-100 border border-r-0 rounded-l-md px-3 flex items-center">
+                    <Instagram className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <Input
+                    id="instagram"
+                    value={socialLinks.instagram}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+                    className="rounded-l-none"
+                    placeholder="https://instagram.com/your-profile"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="whatsapp">WhatsApp Contact Number</Label>
+                <div className="flex mt-1">
+                  <div className="bg-gray-100 border border-r-0 rounded-l-md px-3 flex items-center">
+                    <Phone className="h-4 w-4 text-gray-500" />
+                  </div>
+                  <Input
+                    id="whatsapp"
+                    value={socialLinks.whatsapp}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, whatsapp: e.target.value })}
+                    className="rounded-l-none"
+                    placeholder="+1234567890"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <div className="pt-6 border-t border-gray-200 flex justify-end">
+            <Button
+              onClick={async () => {
+                setIsLoading(true);
+                try {
+                  const { error } = await supabase
+                    .from('business_profiles')
+                    .update({
+                      booking_page_url: bookingUrl,
+                      logo_url: logoPreview,
+                      banner_url: bannerPreview,
+                      theme_color: themeColor,
+                      page_title: pageTitle,
+                      page_description: pageDescription,
+                      show_testimonials: showTestimonials,
+                      social_links: socialLinks,
+                      custom_domain: customDomain ? 'pending' : null
+                    })
+                    .eq('id', 'current-business-id');
+
+                  if (error) throw error;
+                  toast.success('Settings saved successfully');
+                } catch (error) {
+                  toast.error('Failed to save settings');
+                  console.error('Error:', error);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -15,7 +15,7 @@ export async function SubscriptionCheck({
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect('/sign-in');
+        redirect('/login');
     }
 
     const isSubscribed = await checkUserSubscription(user?.id!);

@@ -56,7 +56,7 @@ export default async function Navbar() {
           ) : (
             <>
               <Link
-                href="/sign-in"
+                href="/login"
                 className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-[#FC8D68] transition-colors hidden sm:block"
               >
                 Sign In
