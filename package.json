@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "sentry:release": "bash scripts/sentry-release.sh",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
