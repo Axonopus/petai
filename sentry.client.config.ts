@@ -13,8 +13,9 @@ Sentry.init({
   ],
   
   // Enable automatic instrumentation of errors and transactions
-  autoSessionTracking: true,
   enableTracing: true,
+  autoSessionTracking: false,
+  sessionTrackingIntervalMillis: 30000,
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
   tracesSampleRate: 1,
