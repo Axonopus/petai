@@ -101,7 +101,47 @@ export default async function handler(req: Request) {
   }
 }
 
-async function handleSubscriptionChange(supabase, subscription) {
+interface SupabaseClient {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (column: string, value: string) => Promise<{ data: any; error: any }>;
+      single: () => Promise<{ data: any; error: any }>;
+    };
+    insert: (data: any) => Promise<{ data: any; error: any }>;
+    update: (data: any) => {
+      eq: (column: string, value: string) => Promise<{ error: any }>;
+    };
+    delete: () => {
+      eq: (column: string, value: string) => Promise<void>;
+    };
+  };
+}
+
+interface StripeSubscription {
+  id: string;
+  customer: string;
+  status: string;
+  metadata?: {
+    user_id?: string;
+    billing_cycle?: string;
+  };
+  items: {
+    data: Array<{
+      price: {
+        id: string;
+        unit_amount: number;
+        recurring: {
+          interval: string;
+        };
+      };
+    }>;
+  };
+  current_period_end: number;
+  trial_end?: number | null;
+  currency: string;
+}
+
+async function handleSubscriptionChange(supabase: SupabaseClient, subscription: StripeSubscription) {
   // Get the user ID from the subscription metadata
   const userId = subscription.metadata?.user_id;
   if (!userId) {
@@ -207,7 +247,7 @@ async function handleSubscriptionChange(supabase, subscription) {
   }
 }
 
-async function handleSubscriptionCanceled(supabase, subscription) {
+async function handleSubscriptionCanceled(supabase: SupabaseClient, subscription: StripeSubscription) {
   // Get the user ID from the subscription metadata
   const userId = subscription.metadata?.user_id;
   if (!userId) {
@@ -229,12 +269,12 @@ async function handleSubscriptionCanceled(supabase, subscription) {
   }
 }
 
-async function handleInvoicePaymentSucceeded(supabase, invoice) {
+async function handleInvoicePaymentSucceeded(supabase: SupabaseClient, invoice: any) {
   // This is where you would send a payment confirmation email
   console.log("Invoice payment succeeded:", invoice.id);
 }
 
-async function handleInvoicePaymentFailed(supabase, invoice) {
+async function handleInvoicePaymentFailed(supabase: SupabaseClient, invoice: any) {
   // This is where you would send a payment failure email
   console.log("Invoice payment failed:", invoice.id);
 
