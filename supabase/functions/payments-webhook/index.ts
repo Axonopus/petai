@@ -1,5 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
-import { NextApiRequest, NextApiResponse } from "next";
 import StripeClient from "stripe";
 
 const corsHeaders = {
@@ -8,19 +7,23 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export const corsResponse = (status: number, body: any) => {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+};
+
+export default async function handler(req: Request) {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, Stripe-Signature"
-    );
-    res.status(204).end();
-    return;
+    return new Response(null, {
+      status: 204,
+      headers: {
+        ...corsHeaders,
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      },
+    });
   }
 
   try {
@@ -86,10 +89,10 @@ export default async function handler(
         break;
     }
 
-    res.status(200).json({ received: true });
+    return corsResponse(200, { received: true });
   } catch (error) {
     console.error("Webhook error:", error);
-    res.status(500).json({ error: error.message });
+    return corsResponse(500, { error: error.message });
   }
 });
 
