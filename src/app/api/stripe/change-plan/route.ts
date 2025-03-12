@@ -6,10 +6,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
   apiVersion: "2023-10-16" as any,
 });
 
+import { Plans, PlanDetails, defaultPlan } from "@/types/plans";
+
 // Helper function to get plan details based on plan ID
 async function getPlanDetails(planId: string) {
   // This would normally fetch from a database, but for demo purposes we'll hardcode
-  const plans = {
+  const plans: Plans = {
     petshop_pos: {
       id: "petshop_pos",
       name: "Pet Shop with POS",
@@ -68,14 +70,7 @@ async function getPlanDetails(planId: string) {
   // Construct the key for the plans object
   const key = isBillingCycleAnnual ? `${planType}_annual` : planType;
 
-  return (
-    plans[key] || {
-      id: planType,
-      name: "Custom Plan",
-      description: "Custom subscription plan",
-      amount: 20,
-    }
-  );
+  return plans[key] || { ...defaultPlan, id: planType };
 }
 
 // POST /api/stripe/change-plan
