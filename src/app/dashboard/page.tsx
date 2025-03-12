@@ -14,11 +14,16 @@ import { redirect } from "next/navigation";
 export default async function Dashboard() {
   const supabase = await createClient();
 
+  // First get the session to refresh tokens if needed
+  await supabase.auth.getSession();
+
+  // Then get the user
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user || error) {
     return redirect("/sign-in");
   }
 

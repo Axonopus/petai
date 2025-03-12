@@ -9,6 +9,10 @@ import SubscriptionSettings from "./subscription-settings";
 import LocalizationSettings from "./localization-settings";
 import BookingPageSettings from "./booking-page-settings";
 import SecuritySettings from "./security-settings";
+import PaymentMethodsSettings from "./payment-methods";
+import InvoiceSettings from "./invoice-settings";
+import DatabaseSetup from "./database-setup";
+import RunMigrations from "./run-migrations";
 import { Save, Check } from "lucide-react";
 
 export default function SettingsPage() {
@@ -66,10 +70,16 @@ export default function SettingsPage() {
               Business Profile
             </TabsTrigger>
             <TabsTrigger
-              value="payment"
+              value="payment-methods"
               className="px-3 py-2 h-auto data-[state=active]:bg-[#FC8D68] data-[state=active]:text-white"
             >
-              Payment
+              Payment Methods
+            </TabsTrigger>
+            <TabsTrigger
+              value="invoice-settings"
+              className="px-3 py-2 h-auto data-[state=active]:bg-[#FC8D68] data-[state=active]:text-white"
+            >
+              Invoice Settings
             </TabsTrigger>
             <TabsTrigger
               value="subscription"
@@ -95,6 +105,26 @@ export default function SettingsPage() {
             >
               Security & Notifications
             </TabsTrigger>
+            <TabsTrigger
+              value="database-setup"
+              className="px-3 py-2 h-auto data-[state=active]:bg-[#FC8D68] data-[state=active]:text-white relative"
+            >
+              Database Setup
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="run-migrations"
+              className="px-3 py-2 h-auto data-[state=active]:bg-[#FC8D68] data-[state=active]:text-white relative"
+            >
+              Run Migrations
+              <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+              </span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -102,8 +132,12 @@ export default function SettingsPage() {
           <BusinessProfileSettings />
         </TabsContent>
 
-        <TabsContent value="payment" className="mt-0">
-          <PaymentSettings />
+        <TabsContent value="payment-methods" className="mt-0">
+          <PaymentMethodsSettings />
+        </TabsContent>
+
+        <TabsContent value="invoice-settings" className="mt-0">
+          <InvoiceSettings />
         </TabsContent>
 
         <TabsContent value="subscription" className="mt-0">
@@ -120,6 +154,14 @@ export default function SettingsPage() {
 
         <TabsContent value="security" className="mt-0">
           <SecuritySettings />
+        </TabsContent>
+
+        <TabsContent value="database-setup" className="mt-0">
+          <DatabaseSetup />
+        </TabsContent>
+
+        <TabsContent value="run-migrations" className="mt-0">
+          <RunMigrations />
         </TabsContent>
       </Tabs>
 

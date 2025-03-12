@@ -16,8 +16,15 @@ export default function UserProfile() {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
+    try {
+      await supabase.auth.signOut();
+      // Clear any local storage items related to auth
+      localStorage.removeItem("supabase.auth.token");
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (

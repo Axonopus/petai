@@ -78,9 +78,9 @@ export default function DashboardSidebar() {
           href: "/dashboard/clients",
         },
         {
-          name: "Payments",
+          name: "Invoices",
           icon: <CreditCard className="h-5 w-5" />,
-          href: "/dashboard/payments",
+          href: "/dashboard/invoices",
         },
         {
           name: "Settings",

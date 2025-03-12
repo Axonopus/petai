@@ -1,62 +1,26 @@
 import Footer from "@/components/footer";
+import Hero from "@/components/hero";
 import ClientNavbar from "@/components/client-navbar";
+import FeatureCard from "@/components/feature-card";
+import TestimonialCard from "@/components/testimonial-card";
+import Link from "next/link";
 import {
-  ArrowUpRight,
+  ArrowRight,
   Calendar,
   Users,
   CreditCard,
   Globe,
   Star,
-  ArrowRight,
+  BarChart3,
 } from "lucide-react";
-import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <ClientNavbar />
 
-      {/* Hero Section - Split Screen */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            <div className="w-full md:w-1/2 order-2 md:order-1">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-                Streamline Your Pet Business
-              </h1>
-              <p className="text-lg text-gray-600 mb-8 max-w-lg">
-                The ultimate management platform for pet care businesses.
-                Simplify operations, enhance client engagement, and grow your
-                business.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link
-                  href="/business-registration"
-                  className="inline-flex items-center justify-center px-6 py-3 text-white bg-[#FC8D68] rounded-lg hover:bg-[#e87e5c] transition-colors text-lg font-medium"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Link>
-                <Link
-                  href="#pricing"
-                  className="inline-flex items-center justify-center px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium"
-                >
-                  View Pricing
-                </Link>
-              </div>
-            </div>
-            <div className="w-full md:w-1/2 order-1 md:order-2">
-              <div className="relative rounded-xl overflow-hidden shadow-xl">
-                <img
-                  src="https://images.unsplash.com/photo-1587560699334-cc4ff634909a?w=800&q=80"
-                  alt="Pet business owner using GoPet AI platform"
-                  className="w-full h-auto object-cover rounded-xl"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section */}
+      <Hero />
 
       {/* Features Grid Section */}
       <section className="py-20 bg-gray-50" id="features">
@@ -72,66 +36,42 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Calendar className="w-6 h-6" />,
-                title: "Smart Calendar",
-                description:
-                  "Intelligent scheduling system that prevents double-bookings and optimizes your daily operations.",
-                link: "#features",
-              },
-              {
-                icon: <Users className="w-6 h-6" />,
-                title: "CRM with Loyalty Rewards",
-                description:
-                  "Track client information and pet details while rewarding repeat customers with a built-in loyalty program.",
-                link: "#features",
-              },
-              {
-                icon: <CreditCard className="w-6 h-6" />,
-                title: "POS & Invoicing",
-                description:
-                  "Seamless point-of-sale system with automated invoicing and payment tracking for all your services.",
-                link: "#features",
-              },
-              {
-                icon: <Globe className="w-6 h-6" />,
-                title: "Custom Booking Pages",
-                description:
-                  "Personalized online booking pages that match your brand and allow clients to book services 24/7.",
-                link: "#features",
-              },
-              {
-                icon: <Star className="w-6 h-6" />,
-                title: "Client Reviews",
-                description:
-                  "Automated review collection system to build your online reputation and attract new customers.",
-                link: "#features",
-              },
-              {
-                icon: <ArrowUpRight className="w-6 h-6" />,
-                title: "Business Analytics",
-                description:
-                  "Comprehensive reporting tools to track growth, identify trends, and make data-driven decisions.",
-                link: "#features",
-              },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
-              >
-                <div className="text-[#FC8D68] mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600 mb-4">{feature.description}</p>
-                <Link
-                  href={feature.link}
-                  className="text-[#FC8D68] font-medium hover:underline inline-flex items-center"
-                >
-                  Learn More
-                  <ArrowRight className="ml-1 w-4 h-4" />
-                </Link>
-              </div>
-            ))}
+            <FeatureCard
+              icon={<Calendar className="w-6 h-6" />}
+              title="Smart Calendar"
+              description="Intelligent scheduling system that prevents double-bookings and optimizes your daily operations."
+              link="#features"
+            />
+            <FeatureCard
+              icon={<Users className="w-6 h-6" />}
+              title="CRM with Loyalty Rewards"
+              description="Track client information and pet details while rewarding repeat customers with a built-in loyalty program."
+              link="#features"
+            />
+            <FeatureCard
+              icon={<CreditCard className="w-6 h-6" />}
+              title="POS & Invoicing"
+              description="Seamless point-of-sale system with automated invoicing and payment tracking for all your services."
+              link="#features"
+            />
+            <FeatureCard
+              icon={<Globe className="w-6 h-6" />}
+              title="Custom Booking Pages"
+              description="Personalized online booking pages that match your brand and allow clients to book services 24/7."
+              link="#features"
+            />
+            <FeatureCard
+              icon={<Star className="w-6 h-6" />}
+              title="Client Reviews"
+              description="Automated review collection system to build your online reputation and attract new customers."
+              link="#features"
+            />
+            <FeatureCard
+              icon={<BarChart3 className="w-6 h-6" />}
+              title="Business Analytics"
+              description="Comprehensive reporting tools to track growth, identify trends, and make data-driven decisions."
+              link="#features"
+            />
           </div>
         </div>
       </section>
@@ -261,112 +201,27 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Testimonial 1 */}
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&q=80"
-                    alt="Sarah J."
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-semibold">Sarah J.</h4>
-                  <p className="text-sm text-gray-500">Happy Tails Grooming</p>
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">
-                "Since implementing GoPet AI, we've seen a 30% increase in
-                bookings and significantly reduced no-shows. The client
-                management system is a game-changer!"
-              </p>
-              <div className="flex text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                ))}
-              </div>
-            </div>
-
-            {/* Testimonial 2 */}
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80"
-                    alt="Michael T."
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-semibold">Michael T.</h4>
-                  <p className="text-sm text-gray-500">Paws & Play Daycare</p>
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">
-                "Our administrative workload has been cut in half. The automated
-                invoicing and loyalty program have helped us retain 25% more
-                clients year over year."
-              </p>
-              <div className="flex text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                ))}
-              </div>
-            </div>
-
-            {/* Testimonial 3 */}
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                  <img
-                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&q=80"
-                    alt="Jennifer R."
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div>
-                  <h4 className="font-semibold">Jennifer R.</h4>
-                  <p className="text-sm text-gray-500">
-                    Furry Friends Veterinary
-                  </p>
-                </div>
-              </div>
-              <p className="text-gray-600 mb-4">
-                "The custom booking pages have transformed our scheduling
-                process. We've reduced phone calls by 40% while increasing our
-                online appointment bookings."
-              </p>
-              <div className="flex text-yellow-400">
-                {[...Array(5)].map((_, i) => (
-                  <svg
-                    key={i}
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
-                ))}
-              </div>
-            </div>
+            <TestimonialCard
+              imageSrc="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&q=80"
+              name="Sarah J."
+              company="Happy Tails Grooming"
+              quote="Since implementing GoPet AI, we've seen a 30% increase in bookings and significantly reduced no-shows. The client management system is a game-changer!"
+              rating={5}
+            />
+            <TestimonialCard
+              imageSrc="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80"
+              name="Michael T."
+              company="Paws & Play Daycare"
+              quote="Our administrative workload has been cut in half. The automated invoicing and loyalty program have helped us retain 25% more clients year over year."
+              rating={5}
+            />
+            <TestimonialCard
+              imageSrc="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&q=80"
+              name="Jennifer R."
+              company="Furry Friends Veterinary"
+              quote="The custom booking pages have transformed our scheduling process. We've reduced phone calls by 40% while increasing our online appointment bookings."
+              rating={5}
+            />
           </div>
         </div>
       </section>

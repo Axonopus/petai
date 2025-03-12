@@ -14,9 +14,19 @@ export default function ClientNavbar() {
 
   useEffect(() => {
     async function getUser() {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-      setLoading(false);
+      try {
+        // First refresh the session
+        await supabase.auth.getSession();
+        // Then get the user
+        const { data, error } = await supabase.auth.getUser();
+        if (!error) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      } finally {
+        setLoading(false);
+      }
     }
     getUser();
   }, []);
