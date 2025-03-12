@@ -99,7 +99,7 @@ export default async function handler(req: Request) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return corsResponse(500, { error: errorMessage });
   }
-});
+}
 
 async function handleSubscriptionChange(supabase, subscription) {
   // Get the user ID from the subscription metadata
