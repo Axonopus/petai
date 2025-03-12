@@ -30,7 +30,7 @@ export default async function handler(req: Request) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
     const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createSupabaseClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
@@ -96,7 +96,13 @@ export default async function handler(req: Request) {
   }
 }
 
-type SupabaseClient = ReturnType<typeof createClient>;
+import { Database } from "../../src/types/supabase";
+
+type SupabaseClient = ReturnType<typeof createClient<Database>>;
+
+const createSupabaseClient = (url: string, key: string) => {
+  return createClient<Database>(url, key);
+};
 
 type StripePrice = {
   id: string;
@@ -130,7 +136,7 @@ type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled';
 type PlanType = 'free' | 'petshop_pos' | 'boarding' | 'daycare' | 'grooming';
 type BillingCycle = 'monthly' | 'annual';
 
-async function handleSubscriptionChange(supabase: SupabaseClient, subscription: StripeSubscription) {
+async function handleSubscriptionChange(supabase: ReturnType<typeof createSupabaseClient>, subscription: StripeSubscription) {
   const userId = subscription.metadata?.user_id;
   if (!userId) {
     console.error("No user ID found in subscription metadata");
@@ -205,7 +211,7 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
   }
 }
 
-async function handleSubscriptionCanceled(supabase: SupabaseClient, subscription: StripeSubscription) {
+async function handleSubscriptionCanceled(supabase: ReturnType<typeof createSupabaseClient>, subscription: StripeSubscription) {
   const userId = subscription.metadata?.user_id;
   if (!userId) {
     console.error("No user ID found in subscription metadata");
@@ -225,11 +231,11 @@ async function handleSubscriptionCanceled(supabase: SupabaseClient, subscription
   }
 }
 
-async function handleInvoicePaymentSucceeded(supabase: SupabaseClient, invoice: any) {
+async function handleInvoicePaymentSucceeded(supabase: ReturnType<typeof createSupabaseClient>, invoice: any) {
   console.log("Invoice payment succeeded:", invoice.id);
 }
 
-async function handleInvoicePaymentFailed(supabase: SupabaseClient, invoice: any) {
+async function handleInvoicePaymentFailed(supabase: ReturnType<typeof createSupabaseClient>, invoice: any) {
   console.log("Invoice payment failed:", invoice.id);
 
   if (invoice.subscription) {
