@@ -9,7 +9,6 @@ Sentry.init({
 
   // Add optional integrations for additional features
   integrations: [
-    new Sentry.BrowserTracing(),
     Sentry.replayIntegration(),
   ],
   
