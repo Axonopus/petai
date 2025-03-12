@@ -112,7 +112,7 @@ export default function BusinessProfileForm({
       // Save profile with logo URL
       await onSave({
         ...formData,
-        business_logo: logoUrl,
+        business_logo: logoUrl || undefined,
       });
 
       toast({
