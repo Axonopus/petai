@@ -94,9 +94,10 @@ export default async function handler(req: Request) {
     }
 
     return corsResponse(200, { received: true });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Webhook error:", error);
-    return corsResponse(500, { error: error.message });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return corsResponse(500, { error: errorMessage });
   }
 });
 
