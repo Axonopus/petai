@@ -2,7 +2,10 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": [
-      "esnext"
+      "esnext",
+      "dom",
+      "dom.asynciterable",
+      "deno.ns"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -10,7 +13,7 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -21,7 +24,8 @@
       "@/*": [
         "../../src/*"
       ]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
   "include": [
     "**/*.ts"
