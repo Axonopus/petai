@@ -9,6 +9,255 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_hours: {
+        Row: {
+          business_id: string
+          close_time: string | null
+          closed: boolean | null
+          created_at: string | null
+          day: string
+          id: string
+          open_time: string | null
+          rest_end: string | null
+          rest_start: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          business_id: string
+          close_time?: string | null
+          closed?: boolean | null
+          created_at?: string | null
+          day: string
+          id?: string
+          open_time?: string | null
+          rest_end?: string | null
+          rest_start?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          business_id?: string
+          close_time?: string | null
+          closed?: boolean | null
+          created_at?: string | null
+          day?: string
+          id?: string
+          open_time?: string | null
+          rest_end?: string | null
+          rest_start?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_hours_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_payments: {
+        Row: {
+          auto_invoice: boolean | null
+          auto_receipt: boolean | null
+          business_id: string
+          created_at: string | null
+          id: string
+          in_person_card: boolean | null
+          in_person_cash: boolean | null
+          in_person_qr: boolean | null
+          invoice_prefix: string | null
+          stripe_account_id: string | null
+          stripe_enabled: boolean | null
+          tax_id: string | null
+          tax_name: string | null
+          tax_rate: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_invoice?: boolean | null
+          auto_receipt?: boolean | null
+          business_id: string
+          created_at?: string | null
+          id?: string
+          in_person_card?: boolean | null
+          in_person_cash?: boolean | null
+          in_person_qr?: boolean | null
+          invoice_prefix?: string | null
+          stripe_account_id?: string | null
+          stripe_enabled?: boolean | null
+          tax_id?: string | null
+          tax_name?: string | null
+          tax_rate?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_invoice?: boolean | null
+          auto_receipt?: boolean | null
+          business_id?: string
+          created_at?: string | null
+          id?: string
+          in_person_card?: boolean | null
+          in_person_cash?: boolean | null
+          in_person_qr?: boolean | null
+          invoice_prefix?: string | null
+          stripe_account_id?: string | null
+          stripe_enabled?: boolean | null
+          tax_id?: string | null
+          tax_name?: string | null
+          tax_rate?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_payments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_profiles: {
+        Row: {
+          banner_url: string | null
+          booking_page_url: string | null
+          business_description: string | null
+          business_logo: string | null
+          business_name: string
+          contact_number: string | null
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          custom_domain: string | null
+          date_format: string | null
+          email: string
+          id: string
+          language: string | null
+          logo_url: string | null
+          other_links: Json | null
+          owner_id: string
+          page_description: string | null
+          page_title: string | null
+          phone_number: string | null
+          price_format: string | null
+          show_testimonials: boolean | null
+          social_links: Json | null
+          theme_color: string | null
+          time_format: string | null
+          timezone: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          banner_url?: string | null
+          booking_page_url?: string | null
+          business_description?: string | null
+          business_logo?: string | null
+          business_name: string
+          contact_number?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          custom_domain?: string | null
+          date_format?: string | null
+          email: string
+          id?: string
+          language?: string | null
+          logo_url?: string | null
+          other_links?: Json | null
+          owner_id: string
+          page_description?: string | null
+          page_title?: string | null
+          phone_number?: string | null
+          price_format?: string | null
+          show_testimonials?: boolean | null
+          social_links?: Json | null
+          theme_color?: string | null
+          time_format?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          banner_url?: string | null
+          booking_page_url?: string | null
+          business_description?: string | null
+          business_logo?: string | null
+          business_name?: string
+          contact_number?: string | null
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          custom_domain?: string | null
+          date_format?: string | null
+          email?: string
+          id?: string
+          language?: string | null
+          logo_url?: string | null
+          other_links?: Json | null
+          owner_id?: string
+          page_description?: string | null
+          page_title?: string | null
+          phone_number?: string | null
+          price_format?: string | null
+          show_testimonials?: boolean | null
+          social_links?: Json | null
+          theme_color?: string | null
+          time_format?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          active: boolean | null
+          business_id: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          name: string
+          price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          business_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          name: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          business_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          name?: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           amount: number | null
@@ -92,6 +341,50 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      testimonials: {
+        Row: {
+          approved: boolean | null
+          business_id: string | null
+          client_email: string | null
+          client_name: string
+          content: string
+          created_at: string | null
+          id: string
+          rating: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          business_id?: string | null
+          client_email?: string | null
+          client_name: string
+          content: string
+          created_at?: string | null
+          id?: string
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          business_id?: string | null
+          client_email?: string | null
+          client_name?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          rating?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "business_profiles"
+            referencedColumns: ["id"]
           },
         ]
       }

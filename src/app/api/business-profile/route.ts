@@ -1,87 +1,88 @@
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { createClient } from "../../../../supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { BusinessProfile, BusinessHours } from "@/types/business";
 
-export async function GET() {
+// GET /api/business-profile
+export async function GET(req: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    const supabase = await createClient();
 
     // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    // Get business profile
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Get the business profile
     const { data: profile, error: profileError } = await supabase
       .from("business_profiles")
       .select("*")
       .eq("owner_id", user.id)
       .single();
 
-    if (profileError && profileError.code !== "PGRST116") throw profileError;
-
-    // Get business hours if profile exists
-    let hours = [];
-    if (profile) {
-      const { data: businessHours, error: hoursError } = await supabase
-        .rpc("get_business_hours", { business_profile_id: profile.id });
-
-      if (hoursError) throw hoursError;
-      hours = businessHours;
+    if (profileError && profileError.code !== "PGRST116") {
+      return NextResponse.json(
+        { error: profileError.message },
+        { status: 500 },
+      );
     }
 
-    return NextResponse.json({ profile, hours });
+    // If no profile exists yet, return empty data
+    if (!profile) {
+      return NextResponse.json({ profile: null, hours: [] });
+    }
+
+    // Get the business hours
+    const { data: hours, error: hoursError } = await supabase
+      .from("business_hours")
+      .select("*")
+      .eq("business_id", profile.id)
+      .order("day");
+
+    if (hoursError) {
+      return NextResponse.json({ error: hoursError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ profile, hours: hours || [] });
   } catch (error) {
-    console.error("Error fetching business profile:", error);
     return NextResponse.json(
-      { error: "Error fetching business profile" },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
 
-export async function POST(request: Request) {
+// POST /api/business-profile
+export async function POST(req: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
-    const { profile, hours } = await request.json();
+    const supabase = await createClient();
+    const { profile, hours } = await req.json();
 
     // Get the current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    // Begin transaction
-    const { data: existingProfile, error: fetchError } = await supabase
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if profile exists
+    const { data: existingProfile } = await supabase
       .from("business_profiles")
       .select("id")
       .eq("owner_id", user.id)
       .single();
 
-    if (fetchError && fetchError.code !== "PGRST116") throw fetchError;
-
     let profileId;
+
+    // Update or insert profile
     if (existingProfile) {
-      // Update existing profile
       const { data: updatedProfile, error: updateError } = await supabase
         .from("business_profiles")
         .update({
@@ -92,10 +93,15 @@ export async function POST(request: Request) {
         .select()
         .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        return NextResponse.json(
+          { error: updateError.message },
+          { status: 500 },
+        );
+      }
+
       profileId = existingProfile.id;
     } else {
-      // Create new profile
       const { data: newProfile, error: insertError } = await supabase
         .from("business_profiles")
         .insert({
@@ -105,11 +111,17 @@ export async function POST(request: Request) {
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        return NextResponse.json(
+          { error: insertError.message },
+          { status: 500 },
+        );
+      }
+
       profileId = newProfile.id;
     }
 
-    // Update business hours
+    // Handle business hours if provided
     if (hours && hours.length > 0) {
       // Delete existing hours
       await supabase
@@ -118,22 +130,44 @@ export async function POST(request: Request) {
         .eq("business_id", profileId);
 
       // Insert new hours
-      const { error: hoursError } = await supabase.from("business_hours").insert(
-        hours.map((hour: any) => ({
-          ...hour,
-          business_id: profileId,
-        }))
-      );
+      const hoursWithBusinessId = hours.map((hour: BusinessHours) => ({
+        ...hour,
+        business_id: profileId,
+      }));
 
-      if (hoursError) throw hoursError;
+      const { error: hoursError } = await supabase
+        .from("business_hours")
+        .insert(hoursWithBusinessId);
+
+      if (hoursError) {
+        return NextResponse.json(
+          { error: hoursError.message },
+          { status: 500 },
+        );
+      }
     }
 
-    return NextResponse.json({ success: true });
+    // Get updated data
+    const { data: updatedProfile } = await supabase
+      .from("business_profiles")
+      .select("*")
+      .eq("id", profileId)
+      .single();
+
+    const { data: updatedHours } = await supabase
+      .from("business_hours")
+      .select("*")
+      .eq("business_id", profileId)
+      .order("day");
+
+    return NextResponse.json({
+      profile: updatedProfile,
+      hours: updatedHours || [],
+    });
   } catch (error) {
-    console.error("Error updating business profile:", error);
     return NextResponse.json(
-      { error: "Error updating business profile" },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

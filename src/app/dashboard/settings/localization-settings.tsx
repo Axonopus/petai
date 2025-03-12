@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
+import { useLocalization } from "@/hooks/useLocalization";
 import {
   Card,
   CardContent,
@@ -18,68 +20,158 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-interface Country {
-  code: string;
-  name: string;
-  currency: string;
-  currencySymbol: string;
-}
-
-interface Language {
-  code: string;
-  name: string;
-}
+import {
+  Globe,
+  Languages,
+  DollarSign,
+  Calendar,
+  Clock,
+  Save,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function LocalizationSettings() {
-  const [selectedCountry, setSelectedCountry] = useState<string>("US");
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("en");
+  const { toast } = useToast();
+  const {
+    settings,
+    loading,
+    error,
+    updateLocalizationSettings,
+    getCurrencyForCountry,
+    getTimezoneForCountry,
+    getDefaultPriceFormat,
+  } = useLocalization();
 
-  const countries: Country[] = [
-    { code: "US", name: "United States", currency: "USD", currencySymbol: "$" },
-    { code: "CA", name: "Canada", currency: "CAD", currencySymbol: "$" },
-    {
-      code: "GB",
-      name: "United Kingdom",
-      currency: "GBP",
-      currencySymbol: "£",
-    },
-    { code: "AU", name: "Australia", currency: "AUD", currencySymbol: "$" },
-    { code: "DE", name: "Germany", currency: "EUR", currencySymbol: "€" },
-    { code: "FR", name: "France", currency: "EUR", currencySymbol: "€" },
-    { code: "ES", name: "Spain", currency: "EUR", currencySymbol: "€" },
-    { code: "IT", name: "Italy", currency: "EUR", currencySymbol: "€" },
-    { code: "JP", name: "Japan", currency: "JPY", currencySymbol: "¥" },
-    { code: "BR", name: "Brazil", currency: "BRL", currencySymbol: "R$" },
-    { code: "MX", name: "Mexico", currency: "MXN", currencySymbol: "$" },
+  const [formState, setFormState] = useState({
+    country: "Malaysia",
+    language: "English",
+    currency: "MYR",
+    price_format: "RM1,000.00",
+    date_format: "DD/MM/YYYY",
+    time_format: "24-hour",
+    timezone: "Asia/Kuala_Lumpur",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Initialize form with settings when they load
+  useEffect(() => {
+    if (settings) {
+      setFormState(settings);
+    }
+  }, [settings]);
+
+  const handleCountryChange = (country: string) => {
+    const currency = getCurrencyForCountry(country);
+    const timezone = getTimezoneForCountry(country);
+    const price_format = getDefaultPriceFormat(currency);
+
+    setFormState((prev) => ({
+      ...prev,
+      country,
+      currency,
+      timezone,
+      price_format,
+    }));
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormState((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      const success = await updateLocalizationSettings(formState);
+      if (success) {
+        toast({
+          title: "Settings updated",
+          description:
+            "Your localization settings have been updated successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          "Failed to update localization settings. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // List of countries
+  const countries = [
+    "United States",
+    "Australia",
+    "New Zealand",
+    "Canada",
+    "United Kingdom",
+    "Ireland",
+    "South Africa",
+    "Malaysia",
+    "Singapore",
+    "Thailand",
+    "Philippines",
+    "Brunei",
+    "Indonesia",
+    "India",
+    "China",
+    "Brazil",
+    "Vietnam",
+    "Mexico",
   ];
 
-  const languages: Language[] = [
-    { code: "en", name: "English" },
-    { code: "es", name: "Spanish" },
-    { code: "fr", name: "French" },
-    { code: "de", name: "German" },
-    { code: "it", name: "Italian" },
-    { code: "pt", name: "Portuguese" },
-    { code: "ja", name: "Japanese" },
+  // List of timezones
+  const timezones = [
+    "Africa/Johannesburg",
+    "America/Chicago",
+    "America/Los_Angeles",
+    "America/Mexico_City",
+    "America/New_York",
+    "America/Sao_Paulo",
+    "America/Toronto",
+    "Asia/Bangkok",
+    "Asia/Brunei",
+    "Asia/Ho_Chi_Minh",
+    "Asia/Jakarta",
+    "Asia/Kolkata",
+    "Asia/Kuala_Lumpur",
+    "Asia/Manila",
+    "Asia/Shanghai",
+    "Asia/Singapore",
+    "Australia/Melbourne",
+    "Australia/Perth",
+    "Australia/Sydney",
+    "Europe/Dublin",
+    "Europe/London",
+    "Europe/Paris",
+    "Pacific/Auckland",
+    "UTC",
   ];
 
-  const getCurrentCountry = () => {
+  if (loading && !settings) {
     return (
-      countries.find((country) => country.code === selectedCountry) ||
-      countries[0]
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-[#FC8D68]" />
+      </div>
     );
-  };
+  }
 
-  const handleCountryChange = (value: string) => {
-    setSelectedCountry(value);
-  };
-
-  const handleLanguageChange = (value: string) => {
-    setSelectedLanguage(value);
-  };
-
-  const currentCountry = getCurrentCountry();
+  if (error) {
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertCircle className="h-4 w-4" />
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -90,179 +182,209 @@ export default function LocalizationSettings() {
             Configure regional settings for your business
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Region Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <Label htmlFor="country">Country/Region</Label>
-              <Select
-                value={selectedCountry}
-                onValueChange={handleCountryChange}
-              >
-                <SelectTrigger id="country" className="mt-1">
-                  <SelectValue placeholder="Select country" />
-                </SelectTrigger>
-                <SelectContent>
-                  {countries.map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                This affects tax calculations and available payment methods
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="language">Language</Label>
-              <Select
-                value={selectedLanguage}
-                onValueChange={handleLanguageChange}
-              >
-                <SelectTrigger id="language" className="mt-1">
-                  <SelectValue placeholder="Select language" />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((language) => (
-                    <SelectItem key={language.code} value={language.code}>
-                      {language.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                This affects the language used in client communications
-              </p>
-            </div>
-          </div>
-
-          {/* Currency Settings */}
-          <div className="pt-4 border-t border-gray-200">
-            <Label className="text-base font-medium mb-4 block">
-              Currency Settings
-            </Label>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  value={`${currentCountry.currency} (${currentCountry.currencySymbol})`}
-                  className="mt-1"
+              {/* Country/Region */}
+              <div className="space-y-2">
+                <Label htmlFor="country" className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-gray-500" />
+                  Country/Region
+                </Label>
+                <Select
+                  value={formState.country}
+                  onValueChange={handleCountryChange}
+                >
+                  <SelectTrigger id="country">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Language */}
+              <div className="space-y-2">
+                <Label htmlFor="language" className="flex items-center gap-2">
+                  <Languages className="h-4 w-4 text-gray-500" />
+                  Language
+                </Label>
+                <Select
+                  value={formState.language}
+                  onValueChange={(value) =>
+                    handleInputChange("language", value)
+                  }
                   disabled
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Currency is set based on your country/region
+                >
+                  <SelectTrigger id="language">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English">English</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-gray-500">
+                  Additional languages coming soon
                 </p>
               </div>
 
-              <div>
-                <Label htmlFor="format">Price Format</Label>
-                <Select defaultValue="symbol-first">
-                  <SelectTrigger id="format" className="mt-1">
+              {/* Currency */}
+              <div className="space-y-2">
+                <Label htmlFor="currency" className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-gray-500" />
+                  Currency
+                </Label>
+                <Input
+                  id="currency"
+                  value={formState.currency}
+                  disabled
+                  className="bg-gray-50"
+                />
+                <p className="text-xs text-gray-500">
+                  Currency is set automatically based on your country
+                </p>
+              </div>
+
+              {/* Price Format */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="price_format"
+                  className="flex items-center gap-2"
+                >
+                  <DollarSign className="h-4 w-4 text-gray-500" />
+                  Price Format
+                </Label>
+                <Select
+                  value={formState.price_format}
+                  onValueChange={(value) =>
+                    handleInputChange("price_format", value)
+                  }
+                >
+                  <SelectTrigger id="price_format">
                     <SelectValue placeholder="Select price format" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="symbol-first">{`${currentCountry.currencySymbol}100.00`}</SelectItem>
-                    <SelectItem value="symbol-last">{`100.00${currentCountry.currencySymbol}`}</SelectItem>
+                    <SelectItem
+                      value={`${formState.price_format.charAt(0)}1,000.00`}
+                    >
+                      {formState.price_format.charAt(0)}1,000.00
+                    </SelectItem>
+                    <SelectItem
+                      value={`${formState.price_format.charAt(0)}1.000,00`}
+                    >
+                      {formState.price_format.charAt(0)}1.000,00
+                    </SelectItem>
+                    <SelectItem
+                      value={`${formState.price_format.charAt(0)}1000.00`}
+                    >
+                      {formState.price_format.charAt(0)}1000.00
+                    </SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-gray-500 mt-1">
-                  How prices are displayed to clients
-                </p>
               </div>
-            </div>
-          </div>
 
-          {/* Date & Time Format */}
-          <div className="pt-4 border-t border-gray-200">
-            <Label className="text-base font-medium mb-4 block">
-              Date & Time Format
-            </Label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="date-format">Date Format</Label>
+              {/* Date Format */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="date_format"
+                  className="flex items-center gap-2"
+                >
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  Date Format
+                </Label>
                 <Select
-                  defaultValue={
-                    selectedCountry === "US" ? "mm-dd-yyyy" : "dd-mm-yyyy"
+                  value={formState.date_format}
+                  onValueChange={(value) =>
+                    handleInputChange("date_format", value)
                   }
                 >
-                  <SelectTrigger id="date-format" className="mt-1">
+                  <SelectTrigger id="date_format">
                     <SelectValue placeholder="Select date format" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="mm-dd-yyyy">
-                      MM/DD/YYYY (e.g., 12/31/2023)
-                    </SelectItem>
-                    <SelectItem value="dd-mm-yyyy">
-                      DD/MM/YYYY (e.g., 31/12/2023)
-                    </SelectItem>
-                    <SelectItem value="yyyy-mm-dd">
-                      YYYY-MM-DD (e.g., 2023-12-31)
-                    </SelectItem>
+                    <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
+                    <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
+                    <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="time-format">Time Format</Label>
-                <Select defaultValue={selectedCountry === "US" ? "12h" : "24h"}>
-                  <SelectTrigger id="time-format" className="mt-1">
+              {/* Time Format */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="time_format"
+                  className="flex items-center gap-2"
+                >
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  Time Format
+                </Label>
+                <Select
+                  value={formState.time_format}
+                  onValueChange={(value) =>
+                    handleInputChange("time_format", value)
+                  }
+                >
+                  <SelectTrigger id="time_format">
                     <SelectValue placeholder="Select time format" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="12h">12-hour (e.g., 2:30 PM)</SelectItem>
-                    <SelectItem value="24h">24-hour (e.g., 14:30)</SelectItem>
+                    <SelectItem value="24-hour">24-hour (14:30)</SelectItem>
+                    <SelectItem value="12-hour">12-hour (2:30 PM)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Timezone */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="timezone" className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  Timezone
+                </Label>
+                <Select
+                  value={formState.timezone}
+                  onValueChange={(value) =>
+                    handleInputChange("timezone", value)
+                  }
+                >
+                  <SelectTrigger id="timezone">
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timezones.map((timezone) => (
+                      <SelectItem key={timezone} value={timezone}>
+                        {timezone}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-          </div>
 
-          {/* Timezone */}
-          <div className="pt-4 border-t border-gray-200">
-            <Label
-              htmlFor="timezone"
-              className="text-base font-medium mb-4 block"
-            >
-              Timezone
-            </Label>
-            <Select defaultValue="America/New_York">
-              <SelectTrigger id="timezone" className="mt-1">
-                <SelectValue placeholder="Select timezone" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="America/New_York">
-                  Eastern Time (ET) - New York
-                </SelectItem>
-                <SelectItem value="America/Chicago">
-                  Central Time (CT) - Chicago
-                </SelectItem>
-                <SelectItem value="America/Denver">
-                  Mountain Time (MT) - Denver
-                </SelectItem>
-                <SelectItem value="America/Los_Angeles">
-                  Pacific Time (PT) - Los Angeles
-                </SelectItem>
-                <SelectItem value="Europe/London">
-                  Greenwich Mean Time (GMT) - London
-                </SelectItem>
-                <SelectItem value="Europe/Paris">
-                  Central European Time (CET) - Paris
-                </SelectItem>
-                <SelectItem value="Asia/Tokyo">
-                  Japan Standard Time (JST) - Tokyo
-                </SelectItem>
-                <SelectItem value="Australia/Sydney">
-                  Australian Eastern Time (AET) - Sydney
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500 mt-1">
-              All appointments and schedules will be displayed in this timezone
-            </p>
-          </div>
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                className="bg-[#FC8D68] hover:bg-[#e87e5c]"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Settings
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
     </div>
