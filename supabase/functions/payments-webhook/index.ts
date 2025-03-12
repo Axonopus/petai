@@ -45,6 +45,9 @@ export default async function handler(req: Request) {
 
     let event;
     try {
+      if (!signature) {
+        throw new Error("No signature provided");
+      }
       event = stripe.webhooks.constructEvent(
         body,
         signature,
