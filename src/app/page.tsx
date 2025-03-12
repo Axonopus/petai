@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PageLoading from "@/components/page-loading";
 import { ScrollAnimations } from "@/components/scroll-animations";
+import SuccessStories from "@/components/success-stories";
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,55 +37,53 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <ClientNavbar />
-
-      {/* Hero Section - Split Screen */}
+  
+      {/* Hero Section with Dynamic Carousel */}
       <ScrollAnimations animation="fade-in">
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-gradient-to-b from-blue-50 to-white">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center gap-12">
               <div className="w-full md:w-1/2 order-2 md:order-1">
-                <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight animate-fade-in-up">
-                  Streamline Your Pet Business
+                <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight animate-fade-in-up text-gray-900">
+                  The Smarter Way to Run Your Pet Business
                 </h1>
                 <p className="text-lg text-gray-600 mb-8 max-w-lg animate-fade-in-delay">
-                  The ultimate management platform for pet care businesses.
-                  Simplify operations, enhance client engagement, and grow your
-                  business.
+                  Struggling to manage bookings, payments & customers? Let AI do the work for you! Automate scheduling, boost revenue with dynamic pricing, and grow with AI insights.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-delay-2">
                   <Link
                     href="/business-registration"
                     className="inline-flex items-center justify-center px-6 py-3 text-white bg-[#FC8D68] rounded-lg hover:bg-[#e87e5c] transition-colors text-lg font-medium hover:scale-102"
                   >
-                    Get Started
+                    Start Free Trial
                     <ArrowRight className="ml-2 w-5 h-5 animate-bounce" />
                   </Link>
-                  <Link
-                    href="#pricing"
-                    className="inline-flex items-center justify-center px-6 py-3 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors text-lg font-medium hover:scale-102"
-                  >
-                    View Pricing
-                  </Link>
+                  <div className="text-sm text-gray-500 mt-2 sm:mt-4">
+                    ✨ No credit card required • 14-day free trial
+                  </div>
                 </div>
               </div>
               <div className="w-full md:w-1/2 order-1 md:order-2">
                 <div className="relative">
-                  <div className="absolute -top-4 -right-4 z-10 bg-white rounded-lg shadow-lg p-4 animate-bounce-slow">
+                  <div className="absolute -top-4 -right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-4 animate-bounce-slow">
                     <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <p className="text-sm font-medium">New booking: $500</p>
+                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+                      <p className="text-sm font-medium text-gray-900">AI-Powered Automation</p>
                     </div>
                   </div>
                   <div className="rounded-xl overflow-hidden shadow-xl hover:scale-102 transition-transform duration-300 relative">
-                    <img
-                      src="/hero-image.png"
-                      alt="Pet business owner using GoPet AI platform"
-                      className="w-full h-auto object-cover rounded-xl animate-float"
-                    />
+                    <div className="carousel relative">
+                      {/* Add your carousel images here */}
+                      <img
+                        src="/hero-image.png"
+                        alt="GoPet AI Dashboard"
+                        className="w-full h-[500px] object-cover rounded-xl animate-float"
+                      />
+                    </div>
                     <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 animate-fade-in-up">
                       <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <p className="text-sm font-medium">15 active bookings today</p>
+                        <div className="w-2 h-2 bg-[#7C9A7F] rounded-full animate-pulse"></div>
+                        <p className="text-sm font-medium text-[#2C3E2D]">Made from recycled materials</p>
                       </div>
                     </div>
                   </div>
@@ -177,6 +176,9 @@ export default function Home() {
           </div>
         </section>
       </ScrollAnimations>
+
+      {/* Success Stories Section */}
+      <SuccessStories />
 
       {/* Pricing Section */}
       <ScrollAnimations animation="fade-up" delay={0.3}>
