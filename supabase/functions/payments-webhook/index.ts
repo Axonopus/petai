@@ -101,21 +101,38 @@ export default async function handler(req: Request) {
   }
 }
 
+interface DatabaseResponse<T = any> {
+  data: T | null;
+  error: any;
+}
+
 interface SupabaseClient {
   from: (table: string) => {
     select: (columns: string) => {
-      eq: (column: string, value: string) => Promise<{ data: any; error: any }>;
-      single: () => Promise<{ data: any; error: any }>;
+      eq: (column: string, value: string) => Promise<DatabaseResponse>;
+      single: () => Promise<DatabaseResponse>;
     };
-    insert: (data: any) => Promise<{ data: any; error: any }>;
+    insert: (data: any) => Promise<DatabaseResponse>;
     update: (data: any) => {
-      eq: (column: string, value: string) => Promise<{ error: any }>;
+      eq: (column: string, value: string) => Promise<DatabaseResponse>;
     };
     delete: () => {
-      eq: (column: string, value: string) => Promise<void>;
+      eq: (column: string, value: string) => Promise<DatabaseResponse>;
     };
   };
 }
+
+type StripePrice = {
+  id: string;
+  unit_amount: number;
+  recurring: {
+    interval: string;
+  };
+};
+
+type StripeSubscriptionItem = {
+  price: StripePrice;
+};
 
 interface StripeSubscription {
   id: string;
@@ -126,23 +143,18 @@ interface StripeSubscription {
     billing_cycle?: string;
   };
   items: {
-    data: Array<{
-      price: {
-        id: string;
-        unit_amount: number;
-        recurring: {
-          interval: string;
-        };
-      };
-    }>;
+    data: StripeSubscriptionItem[];
   };
   current_period_end: number;
   trial_end?: number | null;
   currency: string;
 }
 
+type SubscriptionStatus = 'active' | 'trialing' | 'past_due' | 'canceled';
+type PlanType = 'free' | 'petshop_pos' | 'boarding' | 'daycare' | 'grooming';
+type BillingCycle = 'monthly' | 'annual';
+
 async function handleSubscriptionChange(supabase: SupabaseClient, subscription: StripeSubscription) {
-  // Get the user ID from the subscription metadata
   const userId = subscription.metadata?.user_id;
   if (!userId) {
     console.error("No user ID found in subscription metadata");
@@ -150,44 +162,21 @@ async function handleSubscriptionChange(supabase: SupabaseClient, subscription: 
   }
 
   // Determine the subscription status
-  let status = "active";
-  if (subscription.status === "trialing") {
-    status = "trialing";
-  } else if (subscription.status === "past_due") {
-    status = "past_due";
-  } else if (
-    subscription.status === "canceled" ||
-    subscription.status === "unpaid"
-  ) {
-    status = "canceled";
-  }
+  const status: SubscriptionStatus = subscription.status === "trialing" ? "trialing"
+    : subscription.status === "past_due" ? "past_due"
+    : subscription.status === "canceled" || subscription.status === "unpaid" ? "canceled"
+    : "active";
 
   // Determine the plan type from the subscription items
-  let planType = "free";
-  if (
-    subscription.items &&
-    subscription.items.data &&
-    subscription.items.data.length > 0
-  ) {
-    const priceId = subscription.items.data[0].price.id;
-    // Map the price ID to a plan type
-    if (priceId.includes("petshop_pos")) {
-      planType = "petshop_pos";
-    } else if (priceId.includes("boarding")) {
-      planType = "boarding";
-    } else if (priceId.includes("daycare")) {
-      planType = "daycare";
-    } else if (priceId.includes("grooming")) {
-      planType = "grooming";
-    }
-  }
+  const planType: PlanType = subscription.items.data[0]?.price.id.includes("petshop_pos") ? "petshop_pos"
+    : subscription.items.data[0]?.price.id.includes("boarding") ? "boarding"
+    : subscription.items.data[0]?.price.id.includes("daycare") ? "daycare"
+    : subscription.items.data[0]?.price.id.includes("grooming") ? "grooming"
+    : "free";
 
   // Determine the billing cycle
-  const billingCycle =
-    subscription.metadata?.billing_cycle ||
-    (subscription.items.data[0].price.recurring.interval === "year"
-      ? "annual"
-      : "monthly");
+  const billingCycle: BillingCycle = subscription.metadata?.billing_cycle as BillingCycle || 
+    (subscription.items.data[0]?.price.recurring.interval === "year" ? "annual" : "monthly");
 
   // Calculate next billing date and trial end date
   const nextBillingDate = new Date(
