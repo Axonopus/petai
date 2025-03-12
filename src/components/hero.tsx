@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
-import Image from "next/image";
 
 export default function Hero() {
   return (
@@ -50,8 +49,8 @@ export default function Hero() {
           <div className="w-full md:w-1/2 order-1 md:order-2">
             <div className="relative rounded-xl overflow-hidden shadow-xl">
               <img
-                src="https://images.unsplash.com/photo-1587560699334-cc4ff634909a?w=800&q=80"
-                alt="Pet business owner using GoPet AI platform"
+                src="/hero-image.png"
+                alt="Pet business owner using GoPet AI platform with a dog"
                 className="w-full h-auto object-cover rounded-xl"
               />
             </div>
